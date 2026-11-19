@@ -26,6 +26,8 @@ AddLanguage("fr", {
     error_not_allowed = "Vous n'avez pas accès au scanner.",
     error_cooldown = "Le scanner est en recharge.",
     error_too_far = "Le véhicule est trop loin.",
+    error_too_fast = "Le véhicule va trop vite.",
+    error_plate_hidden = "La plaque n'est pas visible d'ici.",
     error_timeout = "Le serveur n'a pas répondu, réessayez.",
     error_unknown = "Une erreur est survenue, réessayez.",
 })

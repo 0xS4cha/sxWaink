@@ -1,4 +1,4 @@
-export type ScannerState = 'idle' | 'target' | 'scanning' | 'locked'
+export type ScannerState = 'idle' | 'target' | 'blocked' | 'scanning' | 'locked'
 
 export interface VehiclePerformance {
   speed: number
@@ -39,4 +39,8 @@ export interface SetWidgetData {
 
 export interface WidgetPageData {
   page: 'next' | 'prev' | number
+}
+
+export interface VibrateData {
+  pulses?: number
 }

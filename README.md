@@ -8,7 +8,11 @@ A vehicle scanner for **ESX or standalone** FiveM servers. Players turn the scan
 ## Features
 
 - **Phone app**: with lb-phone, a Waink app in the phone menu turns the scanner on or off directly, without any interface, and closes the phone.
-- **Scan**: turn the scanner on with a key or the phone app, aim at a vehicle and hold the attack button. The petals of the crosshair fill up during the scan.
+- **Scan**: turn the scanner on with a key or the phone app, aim at a vehicle and hold the attack button. The petals of the crosshair fill up during the scan. Releasing the button or losing the vehicle from the crosshair does not reset the scan, the progress slowly goes down and the scan resumes where it was when the player aims back at the same vehicle.
+- **Distance and speed**: a far or moving vehicle takes longer to scan, and a vehicle going faster than the player above a limit cannot be scanned, the crosshair turns red.
+- **Plate visibility**: the scan needs to see the plate, so the player must stand in front of or behind the vehicle, behind only for motorcycles.
+- **Sound and vibration**: the phone beeps when a scan starts, plays a camera shutter heard by the players around when it completes, then a success or failure sound. The crosshair and the controller vibrate on each result.
+- **Phone light**: the screen of the phone lights up and pulses while a scan is in progress, and the players around see it.
 - **Phone animation**: the scan is done with the phone, so the character takes a phone out and holds it up while the scanner is on, with a dedicated pose in vehicles. Weapons are put away and restored when the scanner is turned off, and the player cannot sprint, shoot or punch while it is on.
 - **Owner lookup**: the server reads the plate of the vehicle and finds its owner in the ESX `owned_vehicles` table, or in the owners registered by your other resources. Results are cached.
 - **Checks**: access by job and grade or ACE permission, cooldown and distance checked by the server.
@@ -86,10 +90,22 @@ Everything lives in `shared/config.lua`.
 | `Config.Phone` | | Identifier, name, developer, price and default install of the app |
 | `Config.Animation.enabled` | `true` | Plays the phone animation while the scanner is on |
 | `Config.Animation` | | Phone prop, hand bone, prop offset and rotation, animations on foot and in vehicle |
+| `Config.Light.enabled` | `true` | Lights up the phone during a scan |
+| `Config.Light` | | Color, range, intensity, pulse speed and maximum distance at which other players see the light |
+| `Config.Feedback.enabled` | `true` | Plays the sounds and vibrations of the scan |
+| `Config.Feedback.sounds` | `true` | Plays the sounds |
+| `Config.Feedback.vibration` | `true` | Shakes the crosshair and the controller |
+| `Config.Feedback.audible` | `true` | Lets the players around hear the sounds marked `audible`, the camera shutter by default |
+| `Config.Feedback.events` | | Sound and vibration of each event: `start`, `shutter`, `success`, `fail` and `blocked` |
 | `Config.Access.jobs` | `{}` | Jobs allowed to use the scanner with their minimum grade, `{ police = 0, mechanic = 2 }`. Empty lets everyone use it |
 | `Config.Access.ace` | `'sxwaink.use'` | ACE permission that bypasses the jobs |
 | `Config.Scan.distance` | `40.0` | Maximum distance of a scanned vehicle |
 | `Config.Scan.duration` | `1500` | Milliseconds the button must be held |
+| `Config.Scan.decay` | `0.5` | Scan progress lost per second when the button is released or the vehicle is lost, `0.5` empties a full scan in two seconds |
+| `Config.Scan.maxSpeed` | `15.0` | Maximum speed difference between the player and the vehicle, in meters per second |
+| `Config.Scan.distanceFactor` | `1.0` | Extra scan time at the maximum distance, `1.0` doubles it |
+| `Config.Scan.speedFactor` | `1.0` | Extra scan time at the maximum speed, `1.0` doubles it |
+| `Config.Scan.plateAngle` | `55.0` | Maximum angle in degrees between the axis of the vehicle and the camera for the plate to be visible |
 | `Config.Scan.cooldown` | `3000` | Milliseconds between two scans |
 | `Config.Scan.widgetDuration` | `15000` | Milliseconds the widget stays on screen |
 | `Config.Owner.enabled` | `true` | Looks up the owner of the scanned vehicles |
@@ -113,6 +129,8 @@ modules/
   scanner/      Scanner state and key, widget, history and vehicle stats
   phone/        Optional lb-phone app that toggles the scanner
   animation/    Phone animation and prop while the scanner is on
+  feedback/     Sounds and vibrations of the scan
+  light/        Light of the phone during a scan, synced with a state bag
   scan/         Targeting, scan progress, access and server checks
   ui/           NUI bridge, translations and units
   exports/      Public server and client API
@@ -121,9 +139,11 @@ translations/   Language files, used by Lua and by the interface
 web/            React, TypeScript and Tailwind interface
 ```
 
-While the scanner is on, the client casts a ray from the camera every frame and keeps the first vehicle it hits within `Config.Scan.distance`. Holding the attack button fills the scan, then the client sends the network id of the vehicle to the server. The server checks the access, the cooldown and the distance, reads the plate itself and returns the owner, so a client cannot look up an arbitrary plate. The client completes the vehicle with its model, lock state and stats, shows the widget and adds it to the history.
+While the scanner is on, the client casts a ray from the camera every frame and keeps the first vehicle it hits within `Config.Scan.distance`. Holding the attack button fills the scan. The scan stays attached to its vehicle: when the button is released or another vehicle is aimed at, the progress goes down by `Config.Scan.decay` per second and a new vehicle can only be scanned once it is empty. The scan time grows with the distance and with the speed of the vehicle relative to the player, so a player driving next to a vehicle can still scan it. Above `Config.Scan.maxSpeed`, or when the camera is more than `Config.Scan.plateAngle` degrees away from the front or the rear of the vehicle, the crosshair turns red and the scan cannot progress. Motorcycles only have a rear plate, and vehicles without plates, like bicycles, boats, helicopters, planes or trains, are not checked. When the scan is full, the client sends the network id of the vehicle to the server. The server checks the access, the cooldown, the distance and the speed, reads the plate itself and returns the owner, so a client cannot look up an arbitrary plate. The client completes the vehicle with its model, lock state and stats, shows the widget and adds it to the history.
 
 While the scanner is on, the character holds a networked phone prop with an upper body animation, so other players see it and the player can still walk or drive. The animation is checked every 250 ms and played again after a ragdoll, a swim or when entering a vehicle. Sprint, weapons and melee are disabled until the scanner is turned off.
+
+During a scan the client sets the `wainkScanning` state bag of its player, replicated to everyone. Each client looks every 300 ms for the players within `Config.Light.distance` that have it, and draws a pulsing light in front of their hand every frame while there is at least one.
 
 The history is saved in the client KVP under the identifier of the character, and reloaded when an ESX character is loaded.
 
@@ -152,7 +172,7 @@ exports.sxWaink:SetVehicleOwner("46EEK572", "Lucas Martin")
 | `IsScannerActive()` | Returns whether the scanner is on |
 | `SetScannerActive(active)` | Turns the scanner on or off without checking the access |
 | `ToggleScanner()` | Turns the scanner on or off like the key, with the access check |
-| `SetCrosshair(active, state?, progress?)` | Shows the crosshair, `state` being `'idle'`, `'target'`, `'scanning'` or `'locked'` and `progress` between `0` and `1` |
+| `SetCrosshair(active, state?, progress?)` | Shows the crosshair, `state` being `'idle'`, `'target'`, `'blocked'`, `'scanning'` or `'locked'` and `progress` between `0` and `1` |
 | `ShowWidget(vehicle, key?)` | Shows the vehicle widget |
 | `HideWidget()` | Hides the vehicle widget |
 | `IsWidgetVisible()` | |

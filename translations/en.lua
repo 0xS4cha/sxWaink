@@ -26,6 +26,8 @@ AddLanguage("en", {
     error_not_allowed = "You are not allowed to use the scanner.",
     error_cooldown = "The scanner is cooling down.",
     error_too_far = "The vehicle is too far away.",
+    error_too_fast = "The vehicle is moving too fast.",
+    error_plate_hidden = "The plate is not visible from here.",
     error_timeout = "The server did not respond, try again.",
     error_unknown = "Something went wrong, try again.",
 })
