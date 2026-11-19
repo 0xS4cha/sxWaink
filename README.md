@@ -1,13 +1,14 @@
 # sxWaink
 
-A vehicle scanner for **ESX or standalone** FiveM servers. Players turn the scanner on with a key, aim at a vehicle, hold the button to scan it and get its owner, lock state, performance and condition in a widget.
+A vehicle scanner for **ESX or standalone** FiveM servers. Players turn the scanner on with a key or from the lb-phone app, aim at a vehicle, hold the button to scan it and get its owner, lock state, performance and condition in a widget.
 
 ![Crosshair](previews/crosshair.png)
 ![Widget](previews/widget.png)
 
 ## Features
 
-- **Scan**: turn the scanner on with a key, aim at a vehicle and hold the attack button. The petals of the crosshair fill up during the scan, weapons are disabled while a vehicle is targeted.
+- **Phone app**: with lb-phone, a Waink app in the phone menu turns the scanner on or off directly, without any interface, and closes the phone.
+- **Scan**: turn the scanner on with a key or the phone app, aim at a vehicle and hold the attack button. The petals of the crosshair fill up during the scan, weapons are disabled while a vehicle is targeted.
 - **Owner lookup**: the server reads the plate of the vehicle and finds its owner in the ESX `owned_vehicles` table, or in the owners registered by your other resources. Results are cached.
 - **Checks**: access by job and grade or ACE permission, cooldown and distance checked by the server.
 - **History**: the last scans are kept per character with the resource KVP and exposed through the exports.
@@ -24,6 +25,7 @@ None are required.
 | --- | --- |
 | [es_extended](https://github.com/esx-framework/esx_core) | Optional. Identifiers, jobs and vehicle owners |
 | [oxmysql](https://github.com/overextended/oxmysql) | Optional. Reads the owners in `owned_vehicles` with ESX |
+| [lb-phone](https://lbscripts.com) | Optional. Adds the Waink app to the phone menu |
 
 The server should run with OneSync so it can read the plate and the position of the scanned vehicle.
 
@@ -48,6 +50,7 @@ The server should run with OneSync so it can read the plate and the position of 
    ```cfg
    ensure oxmysql
    ensure es_extended
+   ensure lb-phone
    ensure sxWaink
    ```
 
@@ -62,6 +65,7 @@ The server should run with OneSync so it can read the plate and the position of 
 | Key / command | Description |
 | --- | --- |
 | `F9` / `/waink` | Turns the scanner on or off |
+| Waink app (lb-phone) | Turns the scanner on or off and closes the phone |
 | `Left click` (hold) | Scans the targeted vehicle |
 | `R` | Next page of the vehicle widget |
 
@@ -77,6 +81,8 @@ Everything lives in `shared/config.lua`.
 | `Config.Units` | `'auto'` | `'auto'` follows the measurement system of the game settings, `'metric'` forces km/h, `'imperial'` forces mph |
 | `Config.Keys.toggle` | `'F9'` | Default key of the scanner |
 | `Config.Keys.nextPage` | `'R'` | Default key of the next widget page |
+| `Config.Phone.enabled` | `true` | Adds the Waink app to lb-phone when it is started |
+| `Config.Phone` | | Identifier, name, developer, price and default install of the app |
 | `Config.Access.jobs` | `{}` | Jobs allowed to use the scanner with their minimum grade, `{ police = 0, mechanic = 2 }`. Empty lets everyone use it |
 | `Config.Access.ace` | `'sxwaink.use'` | ACE permission that bypasses the jobs |
 | `Config.Scan.distance` | `40.0` | Maximum distance of a scanned vehicle |
@@ -102,6 +108,7 @@ core/           Module loader, class helper, callbacks, logger, translations, ut
 bridge/         ESX / standalone bridge, notifications and owner lookup
 modules/
   scanner/      Scanner state and key, widget, history and vehicle stats
+  phone/        Optional lb-phone app that toggles the scanner
   scan/         Targeting, scan progress, access and server checks
   ui/           NUI bridge, translations and units
   exports/      Public server and client API
@@ -113,6 +120,8 @@ web/            React, TypeScript and Tailwind interface
 While the scanner is on, the client casts a ray from the camera every frame and keeps the first vehicle it hits within `Config.Scan.distance`. Holding the attack button fills the scan, then the client sends the network id of the vehicle to the server. The server checks the access, the cooldown and the distance, reads the plate itself and returns the owner, so a client cannot look up an arbitrary plate. The client completes the vehicle with its model, lock state and stats, shows the widget and adds it to the history.
 
 The history is saved in the client KVP under the identifier of the character, and reloaded when an ESX character is loaded.
+
+The lb-phone app has no interface. It is registered with `AddCustomApp` and an `onUse` callback, so opening it closes the phone and toggles the scanner with the same access check as the key. It is registered again when lb-phone restarts and removed when sxWaink stops.
 
 The HUD is the `ui_page` of the resource and only shows the crosshair and the widget, it never takes the focus.
 
