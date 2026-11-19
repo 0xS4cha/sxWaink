@@ -6,13 +6,43 @@ local resourceName = GetCurrentResourceName()
 local scannerActive = false
 local widgetVisible = false
 local history = {}
+local historyKey = nil
 
 local function clamp01(value)
     return Utils.Clamp(value, 0.0, 1.0)
 end
 
 local function sendToPhone(action, data)
-    exports["lb-phone"]:SendCustomAppMessage(Config.App.identifier, { action = action, data = data })
+    pcall(function()
+        exports["lb-phone"]:SendCustomAppMessage(Config.App.identifier, { action = action, data = data })
+    end)
+end
+
+local function saveHistory()
+    if historyKey then
+        SetResourceKvp(historyKey, json.encode(history))
+    end
+end
+
+local function loadHistory(identifier)
+    historyKey = identifier and ('history:%s'):format(identifier) or nil
+    history = {}
+
+    if historyKey then
+        local ok, stored = pcall(json.decode, GetResourceKvpString(historyKey) or '[]')
+        if ok and type(stored) == 'table' then
+            for i = 1, math.min(#stored, Config.HistoryLimit) do
+                history[i] = stored[i]
+            end
+        end
+    end
+
+    sendToPhone('setPhoneState', { history = history })
+end
+
+local function fetchProfile()
+    local result = TriggerServerCallback('sxWaink:getProfile')
+    return result and result.ok and result.data or nil
 end
 
 local function registerApp()
@@ -91,7 +121,10 @@ end
 function SX.App:SetScannerActive(active)
     scannerActive = active == true
     self:SetCrosshair(scannerActive, 'idle', 0)
-    if not scannerActive then
+    if scannerActive then
+        SX.Scan:Start()
+    else
+        SX.Scan:Stop()
         self:HideWidget()
     end
     sendToPhone('setPhoneState', { scannerActive = scannerActive })
@@ -103,6 +136,7 @@ function SX.App:PushScan(vehicle)
     while #history > Config.HistoryLimit do
         table.remove(history)
     end
+    saveHistory()
     sendToPhone('addScan', vehicle)
 end
 
@@ -112,6 +146,7 @@ end
 
 function SX.App:ClearHistory()
     history = {}
+    saveHistory()
     sendToPhone('setPhoneState', { history = history })
 end
 
@@ -147,12 +182,49 @@ function SX.App:Initialize()
     end)
 
     RegisterNUICallback('toggleScanner', function(data, cb)
-        SX.App:SetScannerActive(data and data.active)
-        cb({ ok = true, data = { active = scannerActive } })
+        local active = data and data.active == true
+        if not active then
+            SX.App:SetScannerActive(false)
+            cb({ ok = true, data = { active = false } })
+            return
+        end
+
+        CreateThread(function()
+            local profile = fetchProfile()
+            if not profile then
+                cb({ ok = false, error = 'timeout' })
+                return
+            end
+            if not profile.allowed then
+                cb({ ok = false, error = 'not_allowed' })
+                return
+            end
+
+            SX.App:SetScannerActive(true)
+            cb({ ok = true, data = { active = scannerActive } })
+        end)
     end)
 
     RegisterNUICallback('clearHistory', function(_, cb)
-        history = {}
+        SX.App:ClearHistory()
         cb({ ok = true })
     end)
+
+    RegisterNetEvent('esx:playerLoaded', function()
+        SX.App:SetScannerActive(false)
+        CreateThread(function()
+            local profile = fetchProfile()
+            loadHistory(profile and profile.identifier)
+        end)
+    end)
+
+    RegisterNetEvent('esx:onPlayerLogout', function()
+        SX.App:SetScannerActive(false)
+        loadHistory(nil)
+    end)
+end
+
+function SX.App:InitializeAsync()
+    local profile = fetchProfile()
+    loadHistory(profile and profile.identifier)
 end

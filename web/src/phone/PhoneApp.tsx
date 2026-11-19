@@ -179,6 +179,7 @@ export function PhoneApp() {
   const [history, setHistory] = useState<ScannedVehicle[]>([])
   const [selected, setSelected] = useState<ScannedVehicle | null>(null)
   const [historyLimit, setHistoryLimit] = useState(DEFAULT_HISTORY_LIMIT)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     void fetchNui<PhoneInitialState>('getState', {}, { scannerActive: false, history: mockHistory })
@@ -210,10 +211,20 @@ export function PhoneApp() {
   const toggle = useCallback(() => {
     const next = !active
     setActive(next)
+    setError(null)
     void fetchNui<{ active: boolean }>('toggleScanner', { active: next }, { active: next })
       .then((res) => setActive(Boolean(res?.active)))
-      .catch(() => setActive(!next))
+      .catch((err: unknown) => {
+        setActive(!next)
+        setError(err instanceof Error && /^[a-z_]+$/.test(err.message) ? `error_${err.message}` : 'error_unknown')
+      })
   }, [active])
+
+  useEffect(() => {
+    if (!error) return
+    const timeout = window.setTimeout(() => setError(null), 4000)
+    return () => window.clearTimeout(timeout)
+  }, [error])
 
   const clear = useCallback(() => {
     setHistory([])
@@ -261,6 +272,19 @@ export function PhoneApp() {
 
         <div className="mt-10">
           <ScanButton active={active} onToggle={toggle} t={t} />
+          <AnimatePresence>
+            {error && (
+              <motion.p
+                key={error}
+                className="mx-auto mt-3 max-w-[260px] rounded-xl bg-waink-danger/10 px-3 py-2 text-center text-[13px] leading-snug text-waink-danger ring-1 ring-waink-danger/30"
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+              >
+                {t(error)}
+              </motion.p>
+            )}
+          </AnimatePresence>
         </div>
         <div className="mt-9 grid grid-cols-3 gap-2">
           {stats.map((s) => (
