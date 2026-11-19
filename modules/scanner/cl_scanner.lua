@@ -93,8 +93,10 @@ function SX.Scanner:SetActive(active)
     self:SetCrosshair(scannerActive, 'idle', 0)
     if scannerActive then
         SX.Scan:Start()
+        SX.Animation:Start()
     else
         SX.Scan:Stop()
+        SX.Animation:Stop()
         self:HideWidget()
     end
 end
