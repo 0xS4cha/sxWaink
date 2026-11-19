@@ -28,6 +28,15 @@ Config.Animation = {
     inVehicle = { dict = 'cellphone@in_car@ds', name = 'cellphone_text_read_base' },
 }
 
+Config.Light = {
+    enabled = true,
+    color = { r = 62, g = 230, b = 255 },
+    range = 2.5,
+    intensity = 4.0,
+    pulse = 2.0,
+    distance = 60.0,
+}
+
 Config.Feedback = {
     enabled = true,
     sounds = true,
