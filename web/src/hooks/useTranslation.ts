@@ -34,7 +34,7 @@ export function setGlobalLocale(locale: Locale) {
   notifyListeners()
 }
 
-export function setGlobalTranslations(locale: Locale, translations: PhraseDictionary) {
+function setGlobalTranslations(locale: Locale, translations: PhraseDictionary) {
   currentLocale = normalizeLocale(locale)
   currentTranslations = translations || {}
   notifyListeners()

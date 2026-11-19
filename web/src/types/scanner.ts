@@ -1,5 +1,3 @@
-import type { PhraseDictionary, Units } from './nui'
-
 export type ScannerState = 'idle' | 'target' | 'scanning' | 'locked'
 
 export interface VehiclePerformance {
@@ -25,7 +23,6 @@ export interface ScannedVehicle {
   locked: boolean
   performance?: VehiclePerformance
   details?: VehicleDetails
-  scannedAt?: number
 }
 
 export interface SetScannerData {
@@ -42,16 +39,4 @@ export interface SetWidgetData {
 
 export interface WidgetPageData {
   page: 'next' | 'prev' | number
-}
-
-export interface SetPhoneStateData {
-  scannerActive?: boolean
-  history?: ScannedVehicle[]
-}
-
-export interface PhoneInitialState extends SetPhoneStateData {
-  historyLimit?: number
-  locale?: string
-  translations?: PhraseDictionary
-  units?: Units
 }

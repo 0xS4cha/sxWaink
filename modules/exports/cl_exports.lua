@@ -1,45 +1,49 @@
 exports("IsScannerActive", function()
-    return SX.App:IsScannerActive()
+    return SX.Scanner:IsActive()
 end)
 
 exports("SetScannerActive", function(active)
-    SX.App:SetScannerActive(active)
+    SX.Scanner:SetActive(active)
+end)
+
+exports("ToggleScanner", function()
+    SX.Scanner:Toggle()
 end)
 
 exports("SetCrosshair", function(active, state, progress)
-    SX.App:SetCrosshair(active, state, progress)
+    SX.Scanner:SetCrosshair(active, state, progress)
 end)
 
 exports("ShowWidget", function(vehicle, key)
-    SX.App:ShowWidget(vehicle, key)
+    SX.Scanner:ShowWidget(vehicle, key)
 end)
 
 exports("HideWidget", function()
-    SX.App:HideWidget()
+    SX.Scanner:HideWidget()
 end)
 
 exports("IsWidgetVisible", function()
-    return SX.App:IsWidgetVisible()
+    return SX.Scanner:IsWidgetVisible()
 end)
 
 exports("SetWidgetPage", function(page)
-    SX.App:SetWidgetPage(page)
+    SX.Scanner:SetWidgetPage(page)
 end)
 
 exports("GetVehicleStats", function(entity)
-    return SX.App:GetVehicleStats(entity)
+    return SX.Scanner:GetVehicleStats(entity)
 end)
 
 exports("PushScan", function(vehicle)
-    SX.App:PushScan(vehicle)
+    SX.Scanner:PushScan(vehicle)
 end)
 
 exports("GetHistory", function()
-    return SX.App:GetHistory()
+    return SX.Scanner:GetHistory()
 end)
 
 exports("ClearHistory", function()
-    SX.App:ClearHistory()
+    SX.Scanner:ClearHistory()
 end)
 
 exports("GetUnits", function()
