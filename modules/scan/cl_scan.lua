@@ -131,6 +131,7 @@ end
 
 local function complete(entity)
     busy = true
+    SX.Feedback:Play('shutter')
     local netId = NetworkGetEntityIsNetworked(entity) and VehToNet(entity) or 0
 
     CreateThread(function()
@@ -139,6 +140,7 @@ local function complete(entity)
         busy = false
 
         if not result.ok then
+            SX.Feedback:Play('fail')
             Bridge.Notify(GetPhrase('error_' .. tostring(result.error)), 'error')
             if result.error == 'not_allowed' then
                 SX.Scanner:SetActive(false)
@@ -148,6 +150,7 @@ local function complete(entity)
 
         if not running or not DoesEntityExist(entity) then return end
 
+        SX.Feedback:Play('success')
         local data = result.data or {}
         local vehicle = SX.Scan:BuildVehicle(entity, data.owner, data.plate)
         lockedEntity = entity
@@ -190,9 +193,13 @@ local function loop()
                 progress = decay(progress)
                 if isScanJustPressed() and now >= warnUntil then
                     warnUntil = now + 2000
+                    SX.Feedback:Play('blocked')
                     Bridge.Notify(GetPhrase('error_' .. blocked), 'error')
                 end
             elseif entity and entity == target and now >= cooldownUntil and isScanPressed() then
+                if isScanJustPressed() then
+                    SX.Feedback:Play('start')
+                end
                 state = 'scanning'
                 progress = math.min(1.0, progress + GetFrameTime() * 1000.0 / getScanDuration(ped, entity))
                 if progress >= 1.0 then
