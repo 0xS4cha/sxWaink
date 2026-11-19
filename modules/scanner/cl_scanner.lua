@@ -2,7 +2,6 @@ SX.Scanner = {}
 SX.Modules:Register("Scanner", 10)
 
 local scannerActive = false
-local widgetVisible = false
 local toggling = false
 local history = {}
 local historyKey = nil
@@ -41,21 +40,19 @@ function SX.Scanner:SetCrosshair(active, state, progress)
 end
 
 function SX.Scanner:ShowWidget(vehicle, key)
-    widgetVisible = true
-    SX.UI:Send('setWidget', { visible = true, vehicle = vehicle, key = key or Config.Keys.nextPage })
+    SX.Widget:Show(vehicle, key)
 end
 
 function SX.Scanner:HideWidget()
-    widgetVisible = false
-    SX.UI:Send('setWidget', { visible = false })
+    SX.Widget:Hide()
 end
 
 function SX.Scanner:IsWidgetVisible()
-    return widgetVisible
+    return SX.Widget:IsVisible()
 end
 
 function SX.Scanner:SetWidgetPage(page)
-    SX.UI:Send('widgetPage', { page = page })
+    SX.Widget:SetPage(page)
 end
 
 function SX.Scanner:GetVehicleStats(entity)
@@ -152,13 +149,6 @@ function SX.Scanner:Initialize()
         SX.Scanner:Toggle()
     end, false)
     RegisterKeyMapping('waink', GetPhrase('keymap_toggle'), 'keyboard', Config.Keys.toggle)
-
-    RegisterCommand('waink_nextpage', function()
-        if widgetVisible then
-            SX.Scanner:SetWidgetPage('next')
-        end
-    end, false)
-    RegisterKeyMapping('waink_nextpage', GetPhrase('keymap_next_page'), 'keyboard', Config.Keys.nextPage)
 
     RegisterNetEvent('esx:playerLoaded', function()
         SX.Scanner:SetActive(false)

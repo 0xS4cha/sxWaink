@@ -1,10 +1,6 @@
 @import "tailwindcss";
-@import "@fontsource/barlow-condensed/500.css";
-@import "@fontsource/barlow-condensed/600.css";
-@import "@fontsource/barlow-condensed/700.css";
 
 @theme {
-  --font-waink: "Barlow Condensed", system-ui, sans-serif;
   --color-waink-accent: #3ee6ff;
   --color-waink-danger: #ff5a4f;
   --color-waink-safe: #5ef0a4;
