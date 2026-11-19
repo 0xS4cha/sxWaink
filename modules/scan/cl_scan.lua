@@ -18,15 +18,8 @@ local function rotationToDirection(rotation)
     return vector3(-math.sin(z) * length, math.cos(z) * length, math.sin(x))
 end
 
-local function isPhoneOpen()
-    local ok, open = pcall(function()
-        return exports['lb-phone']:IsOpen()
-    end)
-    return ok and open == true
-end
-
 local function canScan(ped)
-    return not IsEntityDead(ped) and not IsPauseMenuActive() and not isPhoneOpen()
+    return not IsEntityDead(ped) and not IsPauseMenuActive() and not IsNuiFocused()
 end
 
 local function getTarget(ped)
@@ -69,7 +62,7 @@ end
 
 function SX.Scan:BuildVehicle(entity, owner, plate)
     local model = GetEntityModel(entity)
-    local performance, details = SX.App:GetVehicleStats(entity)
+    local performance, details = SX.Scanner:GetVehicleStats(entity)
 
     return {
         brand = labelOrRaw(GetMakeNameFromVehicleModel(model)),
@@ -94,7 +87,7 @@ local function complete(entity)
         if not result.ok then
             Bridge.Notify(GetPhrase('error_' .. tostring(result.error)), 'error')
             if result.error == 'not_allowed' then
-                SX.App:SetScannerActive(false)
+                SX.Scanner:SetActive(false)
             end
             return
         end
@@ -105,8 +98,8 @@ local function complete(entity)
         local vehicle = SX.Scan:BuildVehicle(entity, data.owner, data.plate)
         lockedEntity = entity
         widgetUntil = GetGameTimer() + Config.Scan.widgetDuration
-        SX.App:ShowWidget(vehicle)
-        SX.App:PushScan(vehicle)
+        SX.Scanner:ShowWidget(vehicle)
+        SX.Scanner:PushScan(vehicle)
     end)
 end
 
@@ -132,7 +125,7 @@ local function loop()
                 progress = 0.0
             end
 
-            if entity == lockedEntity and SX.App:IsWidgetVisible() then
+            if entity == lockedEntity and SX.Scanner:IsWidgetVisible() then
                 state, progress = 'locked', 1.0
             elseif now >= cooldownUntil and isScanPressed() then
                 state = 'scanning'
@@ -151,12 +144,12 @@ local function loop()
         local stepped = math.floor(progress * 20) / 20
         if state ~= sentState or stepped ~= sentProgress then
             sentState, sentProgress = state, stepped
-            SX.App:SetCrosshair(true, state, stepped)
+            SX.Scanner:SetCrosshair(true, state, stepped)
         end
 
-        if SX.App:IsWidgetVisible() and (now > widgetUntil or not lockedEntity or not DoesEntityExist(lockedEntity)) then
+        if SX.Scanner:IsWidgetVisible() and (now > widgetUntil or not lockedEntity or not DoesEntityExist(lockedEntity)) then
             lockedEntity = nil
-            SX.App:HideWidget()
+            SX.Scanner:HideWidget()
         end
 
         Wait(0)

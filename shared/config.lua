@@ -5,6 +5,7 @@ Config.Framework = 'auto'
 Config.Units = 'auto'
 
 Config.Keys = {
+    toggle = 'F9',
     nextPage = 'R',
 }
 
@@ -26,11 +27,3 @@ Config.Owner = {
 }
 
 Config.HistoryLimit = 30
-
-Config.App = {
-    identifier = 'Waink',
-    name = 'Waink',
-    developer = '0xS4cha',
-    defaultApp = true,
-    price = 0,
-}
