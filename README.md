@@ -2,8 +2,10 @@
 
 A vehicle scanner for **ESX or standalone** FiveM servers. Players turn the scanner on with a key or from the lb-phone app, aim at a vehicle, hold the button to scan it and get its owner, lock state, performance and condition in a widget.
 
-![Crosshair](previews/crosshair.png)
-![Widget](previews/widget.png)
+![Image](previews/image.png)
+![Image](previews/image2.png)
+![Image](previews/image3.png)
+![Image](previews/image4.png)
 
 ## Features
 
