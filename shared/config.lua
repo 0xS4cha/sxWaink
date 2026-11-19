@@ -9,6 +9,15 @@ Config.Keys = {
     nextPage = 'R',
 }
 
+Config.Phone = {
+    enabled = true,
+    identifier = 'Waink',
+    name = 'Waink',
+    developer = '0xS4cha',
+    defaultApp = true,
+    price = 0,
+}
+
 Config.Access = {
     jobs = {},
     ace = 'sxwaink.use',

@@ -2,6 +2,7 @@ AddLanguage("en", {
     keymap_toggle = "Waink: turn the scanner on or off",
     keymap_next_page = "Waink: next widget page",
     notify_scanner_on = "Scanner ~g~on~s~. Aim at a vehicle and hold the attack button.",
+    phone_app_description = "Opens the vehicle scanner",
     notify_scanner_off = "Scanner ~r~off~s~.",
     unit_speed_metric = "km/h",
     unit_speed_imperial = "mph",
