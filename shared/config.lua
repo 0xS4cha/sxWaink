@@ -36,6 +36,7 @@ Config.Access = {
 Config.Scan = {
     distance = 40.0,
     duration = 1500,
+    decay = 0.5,
     cooldown = 3000,
     widgetDuration = 15000,
 }

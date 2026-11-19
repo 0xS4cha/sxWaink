@@ -15,7 +15,7 @@ export function Crosshair({ state, progress }: CrosshairProps) {
   const engaged = state !== 'idle'
   const scanning = state === 'scanning'
   const locked = state === 'locked'
-  const filled = locked ? PETAL_ANGLES.length : scanning ? Math.floor(Math.min(Math.max(progress, 0), 1) * PETAL_ANGLES.length) : 0
+  const filled = locked ? PETAL_ANGLES.length : Math.floor(Math.min(Math.max(progress, 0), 1) * PETAL_ANGLES.length)
 
   return (
     <div className="pointer-events-none fixed inset-0 flex items-center justify-center">

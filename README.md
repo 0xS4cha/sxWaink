@@ -8,7 +8,7 @@ A vehicle scanner for **ESX or standalone** FiveM servers. Players turn the scan
 ## Features
 
 - **Phone app**: with lb-phone, a Waink app in the phone menu turns the scanner on or off directly, without any interface, and closes the phone.
-- **Scan**: turn the scanner on with a key or the phone app, aim at a vehicle and hold the attack button. The petals of the crosshair fill up during the scan.
+- **Scan**: turn the scanner on with a key or the phone app, aim at a vehicle and hold the attack button. The petals of the crosshair fill up during the scan. Releasing the button or losing the vehicle from the crosshair does not reset the scan, the progress slowly goes down and the scan resumes where it was when the player aims back at the same vehicle.
 - **Phone animation**: the scan is done with the phone, so the character takes a phone out and holds it up while the scanner is on, with a dedicated pose in vehicles. Weapons are put away and restored when the scanner is turned off, and the player cannot sprint, shoot or punch while it is on.
 - **Owner lookup**: the server reads the plate of the vehicle and finds its owner in the ESX `owned_vehicles` table, or in the owners registered by your other resources. Results are cached.
 - **Checks**: access by job and grade or ACE permission, cooldown and distance checked by the server.
@@ -90,6 +90,7 @@ Everything lives in `shared/config.lua`.
 | `Config.Access.ace` | `'sxwaink.use'` | ACE permission that bypasses the jobs |
 | `Config.Scan.distance` | `40.0` | Maximum distance of a scanned vehicle |
 | `Config.Scan.duration` | `1500` | Milliseconds the button must be held |
+| `Config.Scan.decay` | `0.5` | Scan progress lost per second when the button is released or the vehicle is lost, `0.5` empties a full scan in two seconds |
 | `Config.Scan.cooldown` | `3000` | Milliseconds between two scans |
 | `Config.Scan.widgetDuration` | `15000` | Milliseconds the widget stays on screen |
 | `Config.Owner.enabled` | `true` | Looks up the owner of the scanned vehicles |
@@ -121,7 +122,7 @@ translations/   Language files, used by Lua and by the interface
 web/            React, TypeScript and Tailwind interface
 ```
 
-While the scanner is on, the client casts a ray from the camera every frame and keeps the first vehicle it hits within `Config.Scan.distance`. Holding the attack button fills the scan, then the client sends the network id of the vehicle to the server. The server checks the access, the cooldown and the distance, reads the plate itself and returns the owner, so a client cannot look up an arbitrary plate. The client completes the vehicle with its model, lock state and stats, shows the widget and adds it to the history.
+While the scanner is on, the client casts a ray from the camera every frame and keeps the first vehicle it hits within `Config.Scan.distance`. Holding the attack button fills the scan. The scan stays attached to its vehicle: when the button is released or another vehicle is aimed at, the progress goes down by `Config.Scan.decay` per second and a new vehicle can only be scanned once it is empty. When the scan is full, the client sends the network id of the vehicle to the server. The server checks the access, the cooldown and the distance, reads the plate itself and returns the owner, so a client cannot look up an arbitrary plate. The client completes the vehicle with its model, lock state and stats, shows the widget and adds it to the history.
 
 While the scanner is on, the character holds a networked phone prop with an upper body animation, so other players see it and the player can still walk or drive. The animation is checked every 250 ms and played again after a ragdoll, a swim or when entering a vehicle. Sprint, weapons and melee are disabled until the scanner is turned off.
 
