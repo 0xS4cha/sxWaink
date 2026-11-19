@@ -106,6 +106,10 @@ local function complete(entity)
     end)
 end
 
+local function decay(progress)
+    return math.max(0.0, progress - GetFrameTime() * Config.Scan.decay)
+end
+
 local function loop()
     local target = nil
     local progress = 0.0
@@ -115,35 +119,35 @@ local function loop()
         local ped = PlayerPedId()
         local now = GetGameTimer()
         local entity = canScan(ped) and getTarget(ped) or nil
-        local state = 'idle'
+        local state, shown = 'idle', 0.0
 
         restrict(ped)
 
         if busy then
-            state, progress = 'scanning', 1.0
-        elseif entity then
-            if entity ~= target then
+            state, shown = 'scanning', 1.0
+        elseif entity and entity == lockedEntity and SX.Scanner:IsWidgetVisible() then
+            state, shown = 'locked', 1.0
+        else
+            if entity ~= target and progress <= 0.0 then
                 target = entity
-                progress = 0.0
             end
 
-            if entity == lockedEntity and SX.Scanner:IsWidgetVisible() then
-                state, progress = 'locked', 1.0
-            elseif now >= cooldownUntil and isScanPressed() then
+            if entity and entity == target and now >= cooldownUntil and isScanPressed() then
                 state = 'scanning'
                 progress = math.min(1.0, progress + GetFrameTime() * 1000.0 / Config.Scan.duration)
                 if progress >= 1.0 then
+                    progress = 0.0
                     complete(entity)
                 end
             else
-                state, progress = 'target', 0.0
+                state = entity and 'target' or 'idle'
+                progress = decay(progress)
             end
-        else
-            target = nil
-            progress = 0.0
+
+            shown = busy and 1.0 or progress
         end
 
-        local stepped = math.floor(progress * 20) / 20
+        local stepped = math.floor(shown * 20) / 20
         if state ~= sentState or stepped ~= sentProgress then
             sentState, sentProgress = state, stepped
             SX.Scanner:SetCrosshair(true, state, stepped)
