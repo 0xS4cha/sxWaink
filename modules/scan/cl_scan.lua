@@ -11,6 +11,7 @@ local busy = false
 local cooldownUntil = 0
 local lockedEntity = nil
 local widgetUntil = 0
+local warnUntil = 0
 
 local function rotationToDirection(rotation)
     local x = math.rad(rotation.x)
@@ -39,6 +40,33 @@ local function getTarget(ped)
     if #(pedCoords - GetEntityCoords(entity)) > Config.Scan.distance then return nil end
 
     return entity
+end
+
+local function relativeSpeed(ped, entity)
+    local own = GetVehiclePedIsIn(ped, false)
+    if own == 0 then own = ped end
+    return #(GetEntityVelocity(entity) - GetEntityVelocity(own))
+end
+
+local function getBlockReason(ped, entity)
+    if relativeSpeed(ped, entity) > Config.Scan.maxSpeed then
+        return 'too_fast'
+    end
+    return nil
+end
+
+local function getScanDuration(ped, entity)
+    local settings = Config.Scan
+    local distance = math.min(#(GetEntityCoords(ped) - GetEntityCoords(entity)) / settings.distance, 1.0)
+    local speed = math.min(relativeSpeed(ped, entity) / settings.maxSpeed, 1.0)
+    return settings.duration * (1.0 + settings.distanceFactor * distance) * (1.0 + settings.speedFactor * speed)
+end
+
+local function isScanJustPressed()
+    for _, control in ipairs(SCAN_CONTROLS) do
+        if IsDisabledControlJustPressed(0, control) then return true end
+    end
+    return false
 end
 
 local function isScanPressed()
@@ -132,9 +160,18 @@ local function loop()
                 target = entity
             end
 
-            if entity and entity == target and now >= cooldownUntil and isScanPressed() then
+            local blocked = entity and getBlockReason(ped, entity)
+
+            if blocked then
+                state = 'blocked'
+                progress = decay(progress)
+                if isScanJustPressed() and now >= warnUntil then
+                    warnUntil = now + 2000
+                    Bridge.Notify(GetPhrase('error_' .. blocked), 'error')
+                end
+            elseif entity and entity == target and now >= cooldownUntil and isScanPressed() then
                 state = 'scanning'
-                progress = math.min(1.0, progress + GetFrameTime() * 1000.0 / Config.Scan.duration)
+                progress = math.min(1.0, progress + GetFrameTime() * 1000.0 / getScanDuration(ped, entity))
                 if progress >= 1.0 then
                     progress = 0.0
                     complete(entity)

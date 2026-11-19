@@ -10,11 +10,13 @@ const PETAL = 'M20 15.6 C 22.9 12.6, 22.9 7.2, 20 4 C 17.1 7.2, 17.1 12.6, 20 15
 const PETAL_ANGLES = [0, 60, 120, 180, 240, 300]
 const WHITE = '#ffffff'
 const ACCENT = '#3ee6ff'
+const BLOCKED = '#ff5d6c'
 
 export function Crosshair({ state, progress }: CrosshairProps) {
   const engaged = state !== 'idle'
   const scanning = state === 'scanning'
   const locked = state === 'locked'
+  const blocked = state === 'blocked'
   const filled = locked ? PETAL_ANGLES.length : Math.floor(Math.min(Math.max(progress, 0), 1) * PETAL_ANGLES.length)
 
   return (
@@ -53,7 +55,7 @@ export function Crosshair({ state, progress }: CrosshairProps) {
                 initial={false}
                 animate={{
                   y: engaged ? -1.4 : 0,
-                  fill: index < filled ? ACCENT : WHITE,
+                  fill: index < filled ? ACCENT : blocked ? BLOCKED : WHITE,
                 }}
                 transition={{ type: 'spring', stiffness: 380, damping: 22 }}
               />
