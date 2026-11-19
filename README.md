@@ -1,17 +1,16 @@
 # sxWaink
 
-A vehicle scanner app for **lb-phone**. Players turn the scanner on from their phone, aim at a vehicle, hold the button to scan it and get its owner, lock state, performance and condition in a widget. Every scan is kept in the phone history.
+A vehicle scanner for **ESX or standalone** FiveM servers. Players turn the scanner on with a key, aim at a vehicle, hold the button to scan it and get its owner, lock state, performance and condition in a widget.
 
 ![Crosshair](previews/crosshair.png)
 ![Widget](previews/widget.png)
 
 ## Features
 
-- **Phone app**: a custom lb-phone app to turn the scanner on and off, with stats and the history of the last scans.
-- **Scan**: aim at a vehicle with the scanner on and hold the attack button. The petals of the crosshair fill up during the scan, weapons are disabled while a vehicle is targeted.
+- **Scan**: turn the scanner on with a key, aim at a vehicle and hold the attack button. The petals of the crosshair fill up during the scan, weapons are disabled while a vehicle is targeted.
 - **Owner lookup**: the server reads the plate of the vehicle and finds its owner in the ESX `owned_vehicles` table, or in the owners registered by your other resources. Results are cached.
 - **Checks**: access by job and grade or ACE permission, cooldown and distance checked by the server.
-- **History**: the last scans are kept per character with the resource KVP, so they survive a reconnection.
+- **History**: the last scans are kept per character with the resource KVP and exposed through the exports.
 - **Vehicle widget**: three pages, info (owner, lock state, plate), performance (top speed, acceleration, braking, traction) and details (class, seats, fuel, engine), switched with a key.
 - **Units**: top speed in km/h or mph, following the game settings or forced in the config.
 - **Translations**: English and French, shared between Lua and the interface.
@@ -19,9 +18,10 @@ A vehicle scanner app for **lb-phone**. Players turn the scanner on from their p
 
 ## Dependencies
 
+None are required.
+
 | Resource | Purpose |
 | --- | --- |
-| [lb-phone](https://lbscripts.com) | Required. Hosts the Waink app |
 | [es_extended](https://github.com/esx-framework/esx_core) | Optional. Identifiers, jobs and vehicle owners |
 | [oxmysql](https://github.com/overextended/oxmysql) | Optional. Reads the owners in `owned_vehicles` with ESX |
 
@@ -43,12 +43,11 @@ The server should run with OneSync so it can read the plate and the position of 
    npm run build
    ```
 
-3. Add the resource to your `server.cfg` after lb-phone.
+3. Add the resource to your `server.cfg` after its optional dependencies.
 
    ```cfg
    ensure oxmysql
    ensure es_extended
-   ensure lb-phone
    ensure sxWaink
    ```
 
@@ -60,14 +59,13 @@ The server should run with OneSync so it can read the plate and the position of 
 
 ## Usage
 
-Open the Waink app on the phone and turn the scanner on, then close the phone.
-
-| Key | Description |
+| Key / command | Description |
 | --- | --- |
+| `F9` / `/waink` | Turns the scanner on or off |
 | `Left click` (hold) | Scans the targeted vehicle |
 | `R` | Next page of the vehicle widget |
 
-The widget key can be changed in *Settings > Key Bindings > FiveM*.
+Every key can be changed in *Settings > Key Bindings > FiveM*.
 
 ## Configuration
 
@@ -77,6 +75,7 @@ Everything lives in `shared/config.lua`.
 | --- | --- | --- |
 | `Config.Framework` | `'auto'` | `'auto'`, `'esx'` or `'standalone'` |
 | `Config.Units` | `'auto'` | `'auto'` follows the measurement system of the game settings, `'metric'` forces km/h, `'imperial'` forces mph |
+| `Config.Keys.toggle` | `'F9'` | Default key of the scanner |
 | `Config.Keys.nextPage` | `'R'` | Default key of the next widget page |
 | `Config.Access.jobs` | `{}` | Jobs allowed to use the scanner with their minimum grade, `{ police = 0, mechanic = 2 }`. Empty lets everyone use it |
 | `Config.Access.ace` | `'sxwaink.use'` | ACE permission that bypasses the jobs |
@@ -86,8 +85,7 @@ Everything lives in `shared/config.lua`.
 | `Config.Scan.widgetDuration` | `15000` | Milliseconds the widget stays on screen |
 | `Config.Owner.enabled` | `true` | Looks up the owner of the scanned vehicles |
 | `Config.Owner.cacheSeconds` | `60` | Seconds an owner stays cached |
-| `Config.HistoryLimit` | `30` | Scans kept in the phone history |
-| `Config.App` | | Identifier, name, developer, price and default install of the lb-phone app |
+| `Config.HistoryLimit` | `30` | Scans kept in the history |
 
 ### Convars
 
@@ -103,20 +101,20 @@ Everything lives in `shared/config.lua`.
 core/           Module loader, class helper, callbacks, logger, translations, utilities
 bridge/         ESX / standalone bridge, notifications and owner lookup
 modules/
-  app/          lb-phone app, scanner state, widget, history and vehicle stats
+  scanner/      Scanner state and key, widget, history and vehicle stats
   scan/         Targeting, scan progress, access and server checks
   ui/           NUI bridge, translations and units
   exports/      Public server and client API
 shared/         Configuration
 translations/   Language files, used by Lua and by the interface
-web/            React, TypeScript and Tailwind interface, index.html for the HUD and app.html for the phone
+web/            React, TypeScript and Tailwind interface
 ```
 
 While the scanner is on, the client casts a ray from the camera every frame and keeps the first vehicle it hits within `Config.Scan.distance`. Holding the attack button fills the scan, then the client sends the network id of the vehicle to the server. The server checks the access, the cooldown and the distance, reads the plate itself and returns the owner, so a client cannot look up an arbitrary plate. The client completes the vehicle with its model, lock state and stats, shows the widget and adds it to the history.
 
 The history is saved in the client KVP under the identifier of the character, and reloaded when an ESX character is loaded.
 
-The HUD is the `ui_page` of the resource and only shows the crosshair and the widget, it never takes the focus. The phone app is loaded by lb-phone in its own frame and receives its translations with its state when it opens.
+The HUD is the `ui_page` of the resource and only shows the crosshair and the widget, it never takes the focus.
 
 ## Exports
 
@@ -137,14 +135,15 @@ exports.sxWaink:SetVehicleOwner("46EEK572", "Lucas Martin")
 | Export | Description |
 | --- | --- |
 | `IsScannerActive()` | Returns whether the scanner is on |
-| `SetScannerActive(active)` | Turns the scanner on or off and updates the phone |
+| `SetScannerActive(active)` | Turns the scanner on or off without checking the access |
+| `ToggleScanner()` | Turns the scanner on or off like the key, with the access check |
 | `SetCrosshair(active, state?, progress?)` | Shows the crosshair, `state` being `'idle'`, `'target'`, `'scanning'` or `'locked'` and `progress` between `0` and `1` |
 | `ShowWidget(vehicle, key?)` | Shows the vehicle widget |
 | `HideWidget()` | Hides the vehicle widget |
 | `IsWidgetVisible()` | |
 | `SetWidgetPage(page)` | `'next'`, `'prev'` or a page index, `0` info, `1` performance, `2` details |
 | `GetVehicleStats(entity)` | Returns the `performance` and `details` tables of a vehicle |
-| `PushScan(vehicle)` | Adds a vehicle to the phone history |
+| `PushScan(vehicle)` | Adds a vehicle to the history |
 | `GetHistory()` | Returns the history |
 | `ClearHistory()` | Clears the history |
 | `GetUnits()` | Returns `'metric'` or `'imperial'` |
