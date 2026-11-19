@@ -40,3 +40,7 @@ export interface SetWidgetData {
 export interface WidgetPageData {
   page: 'next' | 'prev' | number
 }
+
+export interface VibrateData {
+  pulses?: number
+}

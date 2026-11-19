@@ -4,7 +4,7 @@ import { Crosshair } from './components/hud/Crosshair'
 import { VehicleWidget } from './components/hud/VehicleWidget'
 import { useNuiEvent } from './hooks/useNuiEvent'
 import type { SetSettingsData, Units } from './types/nui'
-import type { ScannedVehicle, ScannerState, SetScannerData, SetWidgetData } from './types/scanner'
+import type { ScannedVehicle, ScannerState, SetScannerData, SetWidgetData, VibrateData } from './types/scanner'
 import { debugData } from './utils/debugData'
 import { fetchNui } from './utils/fetchNui'
 import { isEnvBrowser } from './utils/nui'
@@ -26,6 +26,7 @@ export default function App() {
   const [vehicle, setVehicle] = useState<ScannedVehicle | null>(null)
   const [keyHint, setKeyHint] = useState<string | undefined>('R')
   const [units, setUnits] = useState<Units>('metric')
+  const [vibration, setVibration] = useState({ id: 0, pulses: 1 })
 
   useNuiEvent<SetScannerData>('setScanner', (data) => {
     setActive(data.active)
@@ -36,6 +37,10 @@ export default function App() {
   useNuiEvent<SetWidgetData>('setWidget', (data) => {
     setVehicle(data.visible ? (data.vehicle ?? null) : null)
     if (data.key !== undefined) setKeyHint(data.key || undefined)
+  })
+
+  useNuiEvent<VibrateData>('vibrate', (data) => {
+    setVibration((current) => ({ id: current.id + 1, pulses: data.pulses ?? 1 }))
   })
 
   useNuiEvent<SetSettingsData>('setSettings', (data) => {
@@ -104,7 +109,7 @@ export default function App() {
 
   return (
     <>
-      <AnimatePresence>{active && <Crosshair key="crosshair" state={state} progress={progress} />}</AnimatePresence>
+      <AnimatePresence>{active && <Crosshair key="crosshair" state={state} progress={progress} vibration={vibration} />}</AnimatePresence>
       <AnimatePresence>
         {vehicle && (
           <VehicleWidget

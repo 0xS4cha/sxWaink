@@ -11,6 +11,7 @@ A vehicle scanner for **ESX or standalone** FiveM servers. Players turn the scan
 - **Scan**: turn the scanner on with a key or the phone app, aim at a vehicle and hold the attack button. The petals of the crosshair fill up during the scan. Releasing the button or losing the vehicle from the crosshair does not reset the scan, the progress slowly goes down and the scan resumes where it was when the player aims back at the same vehicle.
 - **Distance and speed**: a far or moving vehicle takes longer to scan, and a vehicle going faster than the player above a limit cannot be scanned, the crosshair turns red.
 - **Plate visibility**: the scan needs to see the plate, so the player must stand in front of or behind the vehicle, behind only for motorcycles.
+- **Sound and vibration**: the phone beeps when a scan starts, plays a camera shutter heard by the players around when it completes, then a success or failure sound. The crosshair and the controller vibrate on each result.
 - **Phone animation**: the scan is done with the phone, so the character takes a phone out and holds it up while the scanner is on, with a dedicated pose in vehicles. Weapons are put away and restored when the scanner is turned off, and the player cannot sprint, shoot or punch while it is on.
 - **Owner lookup**: the server reads the plate of the vehicle and finds its owner in the ESX `owned_vehicles` table, or in the owners registered by your other resources. Results are cached.
 - **Checks**: access by job and grade or ACE permission, cooldown and distance checked by the server.
@@ -88,6 +89,11 @@ Everything lives in `shared/config.lua`.
 | `Config.Phone` | | Identifier, name, developer, price and default install of the app |
 | `Config.Animation.enabled` | `true` | Plays the phone animation while the scanner is on |
 | `Config.Animation` | | Phone prop, hand bone, prop offset and rotation, animations on foot and in vehicle |
+| `Config.Feedback.enabled` | `true` | Plays the sounds and vibrations of the scan |
+| `Config.Feedback.sounds` | `true` | Plays the sounds |
+| `Config.Feedback.vibration` | `true` | Shakes the crosshair and the controller |
+| `Config.Feedback.audible` | `true` | Lets the players around hear the sounds marked `audible`, the camera shutter by default |
+| `Config.Feedback.events` | | Sound and vibration of each event: `start`, `shutter`, `success`, `fail` and `blocked` |
 | `Config.Access.jobs` | `{}` | Jobs allowed to use the scanner with their minimum grade, `{ police = 0, mechanic = 2 }`. Empty lets everyone use it |
 | `Config.Access.ace` | `'sxwaink.use'` | ACE permission that bypasses the jobs |
 | `Config.Scan.distance` | `40.0` | Maximum distance of a scanned vehicle |
@@ -120,6 +126,7 @@ modules/
   scanner/      Scanner state and key, widget, history and vehicle stats
   phone/        Optional lb-phone app that toggles the scanner
   animation/    Phone animation and prop while the scanner is on
+  feedback/     Sounds and vibrations of the scan
   scan/         Targeting, scan progress, access and server checks
   ui/           NUI bridge, translations and units
   exports/      Public server and client API
