@@ -1,7 +1,7 @@
 SX.Scan = {}
 SX.Modules:Register("Scan", 20)
 
-local ATTACK_CONTROLS = { 24, 69, 70, 92, 114, 257 }
+local ATTACK_CONTROLS = { 24, 37, 69, 70, 92, 114, 140, 141, 142, 257, 263, 264 }
 local SCAN_CONTROLS = { 24, 69, 92 }
 local SHAPE_TEST_FLAGS = 1 | 2 | 16
 
@@ -114,12 +114,11 @@ local function loop()
         local entity = canScan(ped) and getTarget(ped) or nil
         local state = 'idle'
 
+        disableAttack()
+
         if busy then
-            disableAttack()
             state, progress = 'scanning', 1.0
         elseif entity then
-            disableAttack()
-
             if entity ~= target then
                 target = entity
                 progress = 0.0
