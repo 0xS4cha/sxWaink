@@ -216,6 +216,9 @@ local function loop()
 
         local stepped = math.floor(shown * 20) / 20
         if state ~= sentState or stepped ~= sentProgress then
+            if state ~= sentState then
+                SX.Light:SetScanning(state == 'scanning')
+            end
             sentState, sentProgress = state, stepped
             SX.Scanner:SetCrosshair(true, state, stepped)
         end
@@ -238,6 +241,7 @@ end
 function SX.Scan:Stop()
     if running then
         SetPedConfigFlag(PlayerPedId(), DISABLE_MELEE_FLAG, false)
+        SX.Light:SetScanning(false)
     end
     running = false
     busy = false
