@@ -1,8 +1,13 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { MotionGlobalConfig } from 'motion/react'
 import '../index.css'
 import { isEnvBrowser } from '../utils/nui'
 import { PhoneApp } from './PhoneApp'
+
+if (import.meta.env.DEV && new URLSearchParams(window.location.search).has('static')) {
+  MotionGlobalConfig.skipAnimations = true
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
