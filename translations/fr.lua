@@ -40,4 +40,9 @@ AddLanguage("fr", {
     time_just_now = "À l'instant",
     time_minutes_ago = "il y a {n} min",
     time_hours_ago = "il y a {n} h",
+    error_not_allowed = "Vous n'avez pas accès au scanner.",
+    error_cooldown = "Le scanner est en recharge.",
+    error_too_far = "Le véhicule est trop loin.",
+    error_timeout = "Le serveur n'a pas répondu, réessayez.",
+    error_unknown = "Une erreur est survenue, réessayez.",
 })

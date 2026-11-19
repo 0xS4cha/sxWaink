@@ -40,4 +40,9 @@ AddLanguage("en", {
     time_just_now = "Just now",
     time_minutes_ago = "{n} min ago",
     time_hours_ago = "{n} h ago",
+    error_not_allowed = "You are not allowed to use the scanner.",
+    error_cooldown = "The scanner is cooling down.",
+    error_too_far = "The vehicle is too far away.",
+    error_timeout = "The server did not respond, try again.",
+    error_unknown = "Something went wrong, try again.",
 })

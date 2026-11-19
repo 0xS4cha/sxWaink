@@ -26,11 +26,14 @@ shared_scripts {
 }
 
 client_scripts {
+    'bridge/cl_bridge.lua',
     'modules/**/cl_*.lua',
     'core/sh_init.lua',
 }
 
 server_scripts {
+    'bridge/sv_bridge.lua',
+    'modules/**/sv_*.lua',
     'core/sh_init.lua',
 }
 
