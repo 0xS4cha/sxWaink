@@ -1,4 +1,4 @@
-export type ScannerState = 'idle' | 'target' | 'scanning' | 'locked'
+export type ScannerState = 'idle' | 'target' | 'blocked' | 'scanning' | 'locked'
 
 export interface VehiclePerformance {
   speed: number

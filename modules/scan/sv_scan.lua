@@ -73,6 +73,13 @@ local function scan(source, netId)
         return { ok = false, error = 'too_far' }
     end
 
+    local ped = GetPlayerPed(source)
+    local own = GetVehiclePedIsIn(ped, false)
+    if own == 0 then own = ped end
+    if #(GetEntityVelocity(entity) - GetEntityVelocity(own)) > Config.Scan.maxSpeed + 5.0 then
+        return { ok = false, error = 'too_fast' }
+    end
+
     lastScan[source] = now
     local plate = normalizePlate(GetVehicleNumberPlateText(entity))
     return { ok = true, data = { plate = plate, owner = SX.Scan:GetOwner(plate) } }
