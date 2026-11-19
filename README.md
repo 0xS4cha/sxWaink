@@ -19,17 +19,18 @@ A vehicle scanner for **ESX or standalone** FiveM servers. Players turn the scan
 - **Owner lookup**: the server reads the plate of the vehicle and finds its owner in the ESX `owned_vehicles` table, or in the owners registered by your other resources. Results are cached.
 - **Checks**: access by job and grade or ACE permission, cooldown and distance checked by the server.
 - **History**: the last scans are kept per character with the resource KVP and exposed through the exports.
-- **Vehicle widget**: three pages, info (owner, lock state, plate), performance (top speed, acceleration, braking, traction) and details (class, seats, fuel, engine), switched with a key.
+- **Vehicle widget**: three pages, info (owner, lock state, plate), performance (top speed, acceleration, braking, traction) and details (class, seats, fuel, engine), switched with a key. Drawn by [sxHelpMenu](https://github.com/0xS4cha/sxHelpMenu), bottom right by default.
 - **Units**: top speed in km/h or mph, following the game settings or forced in the config.
 - **Translations**: English and French, shared between Lua and the interface.
 - **Exports**: a server API to register vehicle owners and check the access, and a client API to drive the crosshair, the widget and the history.
 
 ## Dependencies
 
-None are required.
+Only sxHelpMenu is required.
 
 | Resource | Purpose |
 | --- | --- |
+| [sxHelpMenu](https://github.com/0xS4cha/sxHelpMenu) | Required. Draws the vehicle widget |
 | [es_extended](https://github.com/esx-framework/esx_core) | Optional. Identifiers, jobs and vehicle owners |
 | [oxmysql](https://github.com/overextended/oxmysql) | Optional. Reads the owners in `owned_vehicles` with ESX |
 | [lb-phone](https://lbscripts.com) | Optional. Adds the Waink app to the phone menu |
@@ -58,6 +59,7 @@ The server should run with OneSync so it can read the plate and the position of 
    ensure oxmysql
    ensure es_extended
    ensure lb-phone
+   ensure sxHelpMenu
    ensure sxWaink
    ```
 
@@ -74,7 +76,7 @@ The server should run with OneSync so it can read the plate and the position of 
 | `F9` / `/waink` | Turns the scanner on or off |
 | Waink app (lb-phone) | Turns the scanner on or off and closes the phone |
 | `Left click` (hold) | Scans the targeted vehicle |
-| `R` | Next page of the vehicle widget |
+| `R` | Next page of the vehicle widget, it is the key of sxHelpMenu |
 
 Every key can be changed in *Settings > Key Bindings > FiveM*.
 
@@ -87,7 +89,8 @@ Everything lives in `shared/config.lua`.
 | `Config.Framework` | `'auto'` | `'auto'`, `'esx'` or `'standalone'` |
 | `Config.Units` | `'auto'` | `'auto'` follows the measurement system of the game settings, `'metric'` forces km/h, `'imperial'` forces mph |
 | `Config.Keys.toggle` | `'F9'` | Default key of the scanner |
-| `Config.Keys.nextPage` | `'R'` | Default key of the next widget page |
+| `Config.Widget.position` | `'bottom-right'` | Anchor of the vehicle widget, one of the nine positions of sxHelpMenu |
+| `Config.Widget.offset` | `{ x = 2.5, y = 6.0 }` | Distance of the widget to the edges, in `vw` and `vh` |
 | `Config.Phone.enabled` | `true` | Adds the Waink app to lb-phone when it is started |
 | `Config.Phone` | | Identifier, name, developer, price and default install of the app |
 | `Config.Animation.enabled` | `true` | Plays the phone animation while the scanner is on |
@@ -128,16 +131,17 @@ Everything lives in `shared/config.lua`.
 core/           Module loader, class helper, callbacks, logger, translations, utilities
 bridge/         ESX / standalone bridge, notifications and owner lookup
 modules/
-  scanner/      Scanner state and key, widget, history and vehicle stats
+  scanner/      Scanner state and key, history and vehicle stats
+  widget/       Vehicle widget built for sxHelpMenu
   phone/        Optional lb-phone app that toggles the scanner
   animation/    Phone animation and prop while the scanner is on
   feedback/     Sounds and vibrations of the scan
   light/        Light of the phone during a scan, synced with a state bag
   scan/         Targeting, scan progress, access and server checks
-  ui/           NUI bridge, translations and units
+  ui/           NUI bridge and units
   exports/      Public server and client API
 shared/         Configuration
-translations/   Language files, used by Lua and by the interface
+translations/   Language files
 web/            React, TypeScript and Tailwind interface
 ```
 
@@ -151,7 +155,7 @@ The history is saved in the client KVP under the identifier of the character, an
 
 The lb-phone app has no interface. It is registered with `AddCustomApp` and an `onUse` callback, so opening it closes the phone and toggles the scanner with the same access check as the key. It is registered again when lb-phone restarts and removed when sxWaink stops.
 
-The HUD is the `ui_page` of the resource and only shows the crosshair and the widget, it never takes the focus.
+The HUD is the `ui_page` of the resource and only shows the crosshair, it never takes the focus. The vehicle widget is a menu of sxHelpMenu with the id `sxwaink_vehicle`: the client builds its three pages with the translated labels, the speed in the selected unit and the Waink logo from `web/dist/logo.svg`, and sends it with `exports.sxHelpMenu:Show`. Its position comes from `Config.Widget` and its page key from sxHelpMenu.
 
 ## Exports
 

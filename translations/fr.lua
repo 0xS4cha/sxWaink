@@ -1,6 +1,5 @@
 AddLanguage("fr", {
     keymap_toggle = "Waink : allumer ou éteindre le scanner",
-    keymap_next_page = "Waink : page suivante du widget",
     notify_scanner_on = "Scanner ~g~activé~s~. Visez un véhicule et maintenez le bouton de tir.",
     phone_app_description = "Lance le scanner de véhicules",
     notify_scanner_off = "Scanner ~r~désactivé~s~.",

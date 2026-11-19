@@ -6,7 +6,11 @@ Config.Units = 'auto'
 
 Config.Keys = {
     toggle = 'F9',
-    nextPage = 'R',
+}
+
+Config.Widget = {
+    position = 'bottom-right',
+    offset = { x = 2.5, y = 6.0 },
 }
 
 Config.Phone = {

@@ -9,6 +9,8 @@ repository 'https://github.com/0xS4cha/sxWaink'
 
 lua54 'yes'
 
+dependency 'sxHelpMenu'
+
 shared_scripts {
     'core/sh_logger.lua',
     'core/sh_translation.lua',
