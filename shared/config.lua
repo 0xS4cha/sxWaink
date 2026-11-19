@@ -40,6 +40,7 @@ Config.Scan = {
     maxSpeed = 15.0,
     distanceFactor = 1.0,
     speedFactor = 1.0,
+    plateAngle = 55.0,
     cooldown = 3000,
     widgetDuration = 15000,
 }

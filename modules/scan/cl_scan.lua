@@ -5,6 +5,11 @@ local BLOCKED_CONTROLS = { 21, 24, 37, 69, 70, 92, 114, 140, 141, 142, 257, 263,
 local DISABLE_MELEE_FLAG = 122
 local SCAN_CONTROLS = { 24, 69, 92 }
 local SHAPE_TEST_FLAGS = 1 | 2 | 16
+local PLATE_SIDES = {
+    [0] = 'both', [1] = 'both', [2] = 'both', [3] = 'both', [4] = 'both', [5] = 'both', [6] = 'both',
+    [7] = 'both', [8] = 'rear', [9] = 'both', [10] = 'both', [11] = 'both', [12] = 'both', [17] = 'both',
+    [18] = 'both', [19] = 'both', [20] = 'both',
+}
 
 local running = false
 local busy = false
@@ -48,9 +53,27 @@ local function relativeSpeed(ped, entity)
     return #(GetEntityVelocity(entity) - GetEntityVelocity(own))
 end
 
+local function isPlateVisible(entity)
+    local sides = PLATE_SIDES[GetVehicleClass(entity)]
+    if not sides then return true end
+
+    local toCamera = GetGameplayCamCoord() - GetEntityCoords(entity)
+    local length = math.sqrt(toCamera.x * toCamera.x + toCamera.y * toCamera.y)
+    if length < 0.01 then return true end
+
+    local forward = GetEntityForwardVector(entity)
+    local alignment = (forward.x * toCamera.x + forward.y * toCamera.y) / length
+    local limit = math.cos(math.rad(Config.Scan.plateAngle))
+
+    return alignment <= -limit or (sides == 'both' and alignment >= limit)
+end
+
 local function getBlockReason(ped, entity)
     if relativeSpeed(ped, entity) > Config.Scan.maxSpeed then
         return 'too_fast'
+    end
+    if not isPlateVisible(entity) then
+        return 'plate_hidden'
     end
     return nil
 end
