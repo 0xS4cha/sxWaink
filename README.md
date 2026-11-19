@@ -9,7 +9,7 @@ A vehicle scanner for **ESX or standalone** FiveM servers. Players turn the scan
 
 - **Phone app**: with lb-phone, a Waink app in the phone menu turns the scanner on or off directly, without any interface, and closes the phone.
 - **Scan**: turn the scanner on with a key or the phone app, aim at a vehicle and hold the attack button. The petals of the crosshair fill up during the scan.
-- **Phone animation**: the scan is done with the phone, so the character takes a phone out and holds it up while the scanner is on, with a dedicated pose in vehicles. Weapons are put away and restored when the scanner is turned off.
+- **Phone animation**: the scan is done with the phone, so the character takes a phone out and holds it up while the scanner is on, with a dedicated pose in vehicles. Weapons are put away and restored when the scanner is turned off, and the player cannot sprint, shoot or punch while it is on.
 - **Owner lookup**: the server reads the plate of the vehicle and finds its owner in the ESX `owned_vehicles` table, or in the owners registered by your other resources. Results are cached.
 - **Checks**: access by job and grade or ACE permission, cooldown and distance checked by the server.
 - **History**: the last scans are kept per character with the resource KVP and exposed through the exports.
@@ -123,7 +123,7 @@ web/            React, TypeScript and Tailwind interface
 
 While the scanner is on, the client casts a ray from the camera every frame and keeps the first vehicle it hits within `Config.Scan.distance`. Holding the attack button fills the scan, then the client sends the network id of the vehicle to the server. The server checks the access, the cooldown and the distance, reads the plate itself and returns the owner, so a client cannot look up an arbitrary plate. The client completes the vehicle with its model, lock state and stats, shows the widget and adds it to the history.
 
-While the scanner is on, the character holds a networked phone prop with an upper body animation, so other players see it and the player can still walk or drive. The animation is checked every 250 ms and played again after a ragdoll, a swim or when entering a vehicle. Weapons and melee are disabled until the scanner is turned off.
+While the scanner is on, the character holds a networked phone prop with an upper body animation, so other players see it and the player can still walk or drive. The animation is checked every 250 ms and played again after a ragdoll, a swim or when entering a vehicle. Sprint, weapons and melee are disabled until the scanner is turned off.
 
 The history is saved in the client KVP under the identifier of the character, and reloaded when an ESX character is loaded.
 

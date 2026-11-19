@@ -1,7 +1,8 @@
 SX.Scan = {}
 SX.Modules:Register("Scan", 20)
 
-local ATTACK_CONTROLS = { 24, 37, 69, 70, 92, 114, 140, 141, 142, 257, 263, 264 }
+local BLOCKED_CONTROLS = { 21, 24, 37, 69, 70, 92, 114, 140, 141, 142, 257, 263, 264 }
+local DISABLE_MELEE_FLAG = 122
 local SCAN_CONTROLS = { 24, 69, 92 }
 local SHAPE_TEST_FLAGS = 1 | 2 | 16
 
@@ -47,10 +48,12 @@ local function isScanPressed()
     return false
 end
 
-local function disableAttack()
-    for _, control in ipairs(ATTACK_CONTROLS) do
+local function restrict(ped)
+    for _, control in ipairs(BLOCKED_CONTROLS) do
         DisableControlAction(0, control, true)
     end
+    DisablePlayerFiring(PlayerId(), true)
+    SetPedConfigFlag(ped, DISABLE_MELEE_FLAG, true)
 end
 
 local function labelOrRaw(label)
@@ -114,7 +117,7 @@ local function loop()
         local entity = canScan(ped) and getTarget(ped) or nil
         local state = 'idle'
 
-        disableAttack()
+        restrict(ped)
 
         if busy then
             state, progress = 'scanning', 1.0
@@ -162,6 +165,9 @@ function SX.Scan:Start()
 end
 
 function SX.Scan:Stop()
+    if running then
+        SetPedConfigFlag(PlayerPedId(), DISABLE_MELEE_FLAG, false)
+    end
     running = false
     busy = false
     lockedEntity = nil
