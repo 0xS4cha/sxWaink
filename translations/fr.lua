@@ -1,6 +1,12 @@
 AddLanguage("fr", {
     keymap_toggle = "Waink : allumer ou éteindre le scanner",
-    notify_scanner_on = "Scanner ~g~activé~s~. Visez un véhicule et maintenez le bouton de tir.",
+    notify_scanner_on = "Scanner ~g~activé~s~. Visez un véhicule et maintenez le bouton de tir, ~b~%s~s~ pour ranger le téléphone.",
+    keymap_close = "Waink : ranger le téléphone",
+    hint_subtitle = "Waink",
+    hint_title = "Scanner",
+    hint_scan = "Scanner",
+    hint_close = "Ranger",
+    key_attack = "CLIC G",
     phone_app_description = "Lance le scanner de véhicules",
     notify_scanner_off = "Scanner ~r~désactivé~s~.",
     unit_speed_metric = "km/h",

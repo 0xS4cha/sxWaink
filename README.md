@@ -10,6 +10,7 @@ A vehicle scanner for **ESX or standalone** FiveM servers. Players turn the scan
 ## Features
 
 - **Phone app**: with lb-phone or sd-phone, a Waink app in the phone menu turns the scanner on or off directly and closes the phone.
+- **Put the phone away**: `Backspace` turns the scanner off wherever it was turned on from, and a small card reminds the scan and put away keys while the scanner is on.
 - **Scan**: turn the scanner on with a key or the phone app, aim at a vehicle and hold the attack button. The petals of the crosshair fill up during the scan. Releasing the button or losing the vehicle from the crosshair does not reset the scan, the progress slowly goes down and the scan resumes where it was when the player aims back at the same vehicle.
 - **Distance and speed**: a far or moving vehicle takes longer to scan, and a vehicle going faster than the player above a limit cannot be scanned, the crosshair turns red.
 - **Plate visibility**: the scan needs to see the plate, so the player must stand in front of or behind the vehicle, behind only for motorcycles.
@@ -76,6 +77,7 @@ The server should run with OneSync so it can read the plate and the position of 
 | --- | --- |
 | `F9` / `/waink` | Turns the scanner on or off |
 | Waink app (lb-phone, sd-phone) | Turns the scanner on or off and closes the phone |
+| `Backspace` | Puts the phone away and turns the scanner off, like the GTA phone |
 | `Left click` (hold) | Scans the targeted vehicle |
 | `R` | Next page of the vehicle widget, it is the key of sxHelpMenu |
 
@@ -90,6 +92,8 @@ Everything lives in `shared/config.lua`.
 | `Config.Framework` | `'auto'` | `'auto'`, `'esx'` or `'standalone'` |
 | `Config.Units` | `'auto'` | `'auto'` follows the measurement system of the game settings, `'metric'` forces km/h, `'imperial'` forces mph |
 | `Config.Keys.toggle` | `'F9'` | Default key of the scanner |
+| `Config.Keys.close` | `'BACK'` | Default key that puts the phone away |
+| `Config.Hint.enabled` | `true` | Shows a sxHelpMenu card with the scan and put away keys while the scanner is on and no vehicle is shown |
 | `Config.Widget.position` | `'bottom-right'` | Anchor of the vehicle widget, one of the nine positions of sxHelpMenu |
 | `Config.Widget.offset` | `{ x = 2.5, y = 6.0 }` | Distance of the widget to the edges, in `vw` and `vh` |
 | `Config.Phone.enabled` | `true` | Adds the Waink app to lb-phone and sd-phone when they are started |
