@@ -34,7 +34,7 @@ Only sxHelpMenu is required.
 | [es_extended](https://github.com/esx-framework/esx_core) | Optional. Identifiers, jobs and vehicle owners |
 | [oxmysql](https://github.com/overextended/oxmysql) | Optional. Reads the owners in `owned_vehicles` with ESX |
 | [lb-phone](https://lbscripts.com) | Optional. Adds the Waink app to the phone menu |
-| sd-phone | Optional. Adds the Waink app to the phone menu |
+| [sd-phone](https://docs.samueldev.shop/resources/phone/custom-apps) | Optional, 1.0.8 or newer. Adds the Waink app to the phone menu |
 
 The server should run with OneSync so it can read the plate and the position of the scanned vehicle.
 
@@ -95,7 +95,6 @@ Everything lives in `shared/config.lua`.
 | `Config.Phone.enabled` | `true` | Adds the Waink app to lb-phone and sd-phone when they are started |
 | `Config.Phone` | | Identifier, name, developer, price and default install of the app |
 | `Config.Phone.sdPhone.identifier` | `'waink'` | Identifier of the app in sd-phone |
-| `Config.Phone.sdPhone.closeExport` | `'closePhone'` | sd-phone client export called to close the phone when the app opens, `false` to keep it open |
 | `Config.Animation.enabled` | `true` | Plays the phone animation while the scanner is on |
 | `Config.Animation` | | Phone prop, hand bone, prop offset and rotation, animations on foot and in vehicle |
 | `Config.Light.enabled` | `true` | Lights up the phone during a scan |
@@ -158,7 +157,7 @@ The history is saved in the client KVP under the identifier of the character, an
 
 The lb-phone app has no interface. It is registered with `AddCustomApp` and an `onUse` callback, so opening it closes the phone and toggles the scanner with the same access check as the key. It is registered again when lb-phone restarts and removed when sxWaink stops.
 
-sd-phone apps need a page, so the app is registered with `addCustomApp`, `web/dist/phone.html` as its `ui` and an `onOpen` callback that closes the phone with `Config.Phone.sdPhone.closeExport` and toggles the scanner. The page is only seen if the phone stays open. The app is registered again on every `sd-phone:ready` event, when sd-phone starts or restarts.
+sd-phone apps need a page, so the app is registered with `addCustomApp`, `web/dist/phone.html` as its `ui` and an `onOpen` callback that closes the phone (`close` export) and toggles the scanner, the page is only seen for a frame. The app is registered again on every `sd-phone:ready` event, when sd-phone starts or restarts, and removed with `removeCustomApp` when sxWaink stops.
 
 The HUD is the `ui_page` of the resource and only shows the crosshair, it never takes the focus. The vehicle widget is a menu of sxHelpMenu with the id `sxwaink_vehicle`: the client builds its three pages with the translated labels, the speed in the selected unit and the Waink logo from `web/dist/logo.svg`, and sends it with `exports.sxHelpMenu:Show`. Its position comes from `Config.Widget` and its page key from sxHelpMenu.
 
