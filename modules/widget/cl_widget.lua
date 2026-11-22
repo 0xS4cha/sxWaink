@@ -101,6 +101,7 @@ end
 
 function SX.Widget:Show(vehicle, key)
     if type(vehicle) ~= 'table' or not available() then return end
+    SX.Hint:Hide()
     visible = exports.sxHelpMenu:Show(buildMenu(vehicle, key)) ~= nil
 end
 
@@ -110,6 +111,7 @@ function SX.Widget:Hide()
     if GetResourceState('sxHelpMenu') == 'started' then
         exports.sxHelpMenu:Hide(WIDGET_ID)
     end
+    if SX.Scanner:IsActive() then SX.Hint:Show() end
 end
 
 function SX.Widget:IsVisible()

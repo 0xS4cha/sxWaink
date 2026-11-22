@@ -91,10 +91,12 @@ function SX.Scanner:SetActive(active)
     if scannerActive then
         SX.Scan:Start()
         SX.Animation:Start()
+        if not self:IsWidgetVisible() then SX.Hint:Show() end
     else
         SX.Scan:Stop()
         SX.Animation:Stop()
         self:HideWidget()
+        SX.Hint:Hide()
     end
 end
 
@@ -122,7 +124,7 @@ function SX.Scanner:Toggle()
         end
 
         SX.Scanner:SetActive(true)
-        Bridge.Notify(GetPhrase('notify_scanner_on'), 'success')
+        Bridge.Notify(GetPhrase('notify_scanner_on', SX.Hint:CloseKey()), 'success')
     end)
 end
 

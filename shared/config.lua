@@ -6,6 +6,11 @@ Config.Units = 'auto'
 
 Config.Keys = {
     toggle = 'F9',
+    close = 'BACK',
+}
+
+Config.Hint = {
+    enabled = true,
 }
 
 Config.Widget = {

@@ -1,6 +1,12 @@
 AddLanguage("en", {
     keymap_toggle = "Waink: turn the scanner on or off",
-    notify_scanner_on = "Scanner ~g~on~s~. Aim at a vehicle and hold the attack button.",
+    notify_scanner_on = "Scanner ~g~on~s~. Aim at a vehicle and hold the attack button, ~b~%s~s~ to put the phone away.",
+    keymap_close = "Waink: put the phone away",
+    hint_subtitle = "Waink",
+    hint_title = "Scanner",
+    hint_scan = "Scan",
+    hint_close = "Put away",
+    key_attack = "LMB",
     phone_app_description = "Opens the vehicle scanner",
     notify_scanner_off = "Scanner ~r~off~s~.",
     unit_speed_metric = "km/h",
