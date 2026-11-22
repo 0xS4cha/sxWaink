@@ -22,7 +22,6 @@ Config.Phone = {
     price = 0,
     sdPhone = {
         identifier = 'waink',
-        closeExport = 'closePhone',
     },
 }
 

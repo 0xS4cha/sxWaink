@@ -44,28 +44,28 @@ providers['lb-phone'] = {
 providers['sd-phone'] = {
     readyEvent = 'sd-phone:ready',
     register = function()
-        local settings = Config.Phone.sdPhone
         local ok, success, errorMessage = pcall(function()
             return exports['sd-phone']:addCustomApp({
-                identifier = settings.identifier,
+                identifier = Config.Phone.sdPhone.identifier,
                 name = Config.Phone.name,
                 description = GetPhrase('phone_app_description'),
+                developer = Config.Phone.developer,
                 defaultApp = Config.Phone.defaultApp,
+                price = Config.Phone.price,
                 ui = resourceName .. '/web/dist/phone.html',
                 icon = ('https://cfx-nui-%s/web/dist/icon.png'):format(resourceName),
                 onOpen = function()
                     useApp(function()
-                        if not settings.closeExport then return end
-                        local closed = pcall(function() exports['sd-phone'][settings.closeExport]() end)
-                        if not closed then
-                            Logger:error('PHONE', ('sd-phone has no "%s" export, set Config.Phone.sdPhone.closeExport'):format(settings.closeExport))
-                        end
+                        pcall(function() exports['sd-phone']:close() end)
                     end)
                 end,
             })
         end)
         if not ok or not success then return false, ok and errorMessage or success end
         return true
+    end,
+    unregister = function()
+        pcall(function() exports['sd-phone']:removeCustomApp(Config.Phone.sdPhone.identifier) end)
     end,
 }
 
