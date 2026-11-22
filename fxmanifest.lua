@@ -4,7 +4,7 @@ game 'gta5'
 name 'sxWaink'
 description 'Vehicle scanner with an in game crosshair, a vehicle widget, owner lookup and an optional lb-phone or sd-phone app, ESX or standalone'
 author '0xS4cha'
-version '1.1.0'
+version '1.2.0'
 repository 'https://github.com/0xS4cha/sxWaink'
 
 lua54 'yes'
