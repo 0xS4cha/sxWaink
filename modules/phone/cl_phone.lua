@@ -1,79 +1,127 @@
 SX.Phone = {}
 SX.Modules:Register("Phone", 30)
 
-local PHONE_RESOURCE = 'lb-phone'
 local resourceName = GetCurrentResourceName()
-local registered = false
+local registered = {}
 
-local function isPhoneStarted()
-    return GetResourceState(PHONE_RESOURCE) == 'started'
+local function isStarted(resource)
+    return GetResourceState(resource) == 'started'
 end
 
-local function closePhone()
-    pcall(function()
-        exports[PHONE_RESOURCE]:ToggleOpen(false)
-    end)
+local function useApp(close)
+    close()
+    SX.Scanner:Toggle()
 end
 
-local function register()
-    if not Config.Phone.enabled or not isPhoneStarted() then return end
+local providers = {}
 
+providers['lb-phone'] = {
+    register = function()
+        local ok, success, errorMessage = pcall(function()
+            return exports['lb-phone']:AddCustomApp({
+                identifier = Config.Phone.identifier,
+                name = Config.Phone.name,
+                description = GetPhrase('phone_app_description'),
+                developer = Config.Phone.developer,
+                defaultApp = Config.Phone.defaultApp,
+                price = Config.Phone.price,
+                icon = ('https://cfx-nui-%s/web/dist/icon.png'):format(resourceName),
+                onUse = function()
+                    useApp(function()
+                        pcall(function() exports['lb-phone']:ToggleOpen(false) end)
+                    end)
+                end,
+            })
+        end)
+        if not ok or not success then return false, ok and errorMessage or success end
+        return true
+    end,
+    unregister = function()
+        pcall(function() exports['lb-phone']:RemoveCustomApp(Config.Phone.identifier) end)
+    end,
+}
+
+providers['sd-phone'] = {
+    readyEvent = 'sd-phone:ready',
+    register = function()
+        local settings = Config.Phone.sdPhone
+        local ok, success, errorMessage = pcall(function()
+            return exports['sd-phone']:addCustomApp({
+                identifier = settings.identifier,
+                name = Config.Phone.name,
+                description = GetPhrase('phone_app_description'),
+                defaultApp = Config.Phone.defaultApp,
+                ui = resourceName .. '/web/dist/phone.html',
+                icon = ('https://cfx-nui-%s/web/dist/icon.png'):format(resourceName),
+                onOpen = function()
+                    useApp(function()
+                        if not settings.closeExport then return end
+                        local closed = pcall(function() exports['sd-phone'][settings.closeExport]() end)
+                        if not closed then
+                            Logger:error('PHONE', ('sd-phone has no "%s" export, set Config.Phone.sdPhone.closeExport'):format(settings.closeExport))
+                        end
+                    end)
+                end,
+            })
+        end)
+        if not ok or not success then return false, ok and errorMessage or success end
+        return true
+    end,
+}
+
+local function register(resource)
+    local provider = providers[resource]
+    if not Config.Phone.enabled or not provider or registered[resource] or not isStarted(resource) then return end
+
+    registered[resource] = true
     Wait(500)
 
-    local ok, success, errorMessage = pcall(function()
-        return exports[PHONE_RESOURCE]:AddCustomApp({
-            identifier = Config.Phone.identifier,
-            name = Config.Phone.name,
-            description = GetPhrase('phone_app_description'),
-            developer = Config.Phone.developer,
-            defaultApp = Config.Phone.defaultApp,
-            price = Config.Phone.price,
-            icon = ('https://cfx-nui-%s/web/dist/icon.png'):format(resourceName),
-            onUse = function()
-                closePhone()
-                SX.Scanner:Toggle()
-            end,
-        })
-    end)
-
-    if not ok or not success then
-        Logger:error('PHONE', 'AddCustomApp failed:', ok and errorMessage or success)
-        return
+    local ok, err = provider.register()
+    if not ok then
+        registered[resource] = nil
+        Logger:error('PHONE', ('%s app registration failed:'):format(resource), err)
     end
-
-    registered = true
 end
 
-local function unregister()
-    if not registered or not isPhoneStarted() then return end
-    registered = false
-
-    pcall(function()
-        exports[PHONE_RESOURCE]:RemoveCustomApp(Config.Phone.identifier)
-    end)
+local function unregister(resource)
+    local provider = providers[resource]
+    if not registered[resource] then return end
+    registered[resource] = nil
+    if provider.unregister and isStarted(resource) then provider.unregister() end
 end
 
 function SX.Phone:IsRegistered()
-    return registered
+    return next(registered) ~= nil
 end
 
 function SX.Phone:Initialize()
+    for resource, provider in pairs(providers) do
+        if provider.readyEvent then
+            AddEventHandler(provider.readyEvent, function()
+                registered[resource] = nil
+                CreateThread(function() register(resource) end)
+            end)
+        end
+    end
+
     AddEventHandler('onClientResourceStart', function(resource)
-        if resource == PHONE_RESOURCE then
-            registered = false
-            CreateThread(register)
+        if providers[resource] and not providers[resource].readyEvent then
+            registered[resource] = nil
+            CreateThread(function() register(resource) end)
         end
     end)
 
     AddEventHandler('onClientResourceStop', function(resource)
         if resource == resourceName then
-            unregister()
-        elseif resource == PHONE_RESOURCE then
-            registered = false
+            for name in pairs(providers) do unregister(name) end
+        elseif providers[resource] then
+            registered[resource] = nil
         end
     end)
 end
 
 function SX.Phone:InitializeAsync()
-    register()
+    for resource in pairs(providers) do
+        register(resource)
+    end
 end

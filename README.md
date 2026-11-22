@@ -1,6 +1,6 @@
 # sxWaink
 
-A vehicle scanner for **ESX or standalone** FiveM servers. Players turn the scanner on with a key or from the lb-phone app, aim at a vehicle, hold the button to scan it and get its owner, lock state, performance and condition in a widget.
+A vehicle scanner for **ESX or standalone** FiveM servers. Players turn the scanner on with a key or from the lb-phone or sd-phone app, aim at a vehicle, hold the button to scan it and get its owner, lock state, performance and condition in a widget.
 
 ![Image](previews/image.png)
 ![Image](previews/image2.png)
@@ -9,7 +9,7 @@ A vehicle scanner for **ESX or standalone** FiveM servers. Players turn the scan
 
 ## Features
 
-- **Phone app**: with lb-phone, a Waink app in the phone menu turns the scanner on or off directly, without any interface, and closes the phone.
+- **Phone app**: with lb-phone or sd-phone, a Waink app in the phone menu turns the scanner on or off directly and closes the phone.
 - **Scan**: turn the scanner on with a key or the phone app, aim at a vehicle and hold the attack button. The petals of the crosshair fill up during the scan. Releasing the button or losing the vehicle from the crosshair does not reset the scan, the progress slowly goes down and the scan resumes where it was when the player aims back at the same vehicle.
 - **Distance and speed**: a far or moving vehicle takes longer to scan, and a vehicle going faster than the player above a limit cannot be scanned, the crosshair turns red.
 - **Plate visibility**: the scan needs to see the plate, so the player must stand in front of or behind the vehicle, behind only for motorcycles.
@@ -34,6 +34,7 @@ Only sxHelpMenu is required.
 | [es_extended](https://github.com/esx-framework/esx_core) | Optional. Identifiers, jobs and vehicle owners |
 | [oxmysql](https://github.com/overextended/oxmysql) | Optional. Reads the owners in `owned_vehicles` with ESX |
 | [lb-phone](https://lbscripts.com) | Optional. Adds the Waink app to the phone menu |
+| sd-phone | Optional. Adds the Waink app to the phone menu |
 
 The server should run with OneSync so it can read the plate and the position of the scanned vehicle.
 
@@ -74,7 +75,7 @@ The server should run with OneSync so it can read the plate and the position of 
 | Key / command | Description |
 | --- | --- |
 | `F9` / `/waink` | Turns the scanner on or off |
-| Waink app (lb-phone) | Turns the scanner on or off and closes the phone |
+| Waink app (lb-phone, sd-phone) | Turns the scanner on or off and closes the phone |
 | `Left click` (hold) | Scans the targeted vehicle |
 | `R` | Next page of the vehicle widget, it is the key of sxHelpMenu |
 
@@ -91,8 +92,10 @@ Everything lives in `shared/config.lua`.
 | `Config.Keys.toggle` | `'F9'` | Default key of the scanner |
 | `Config.Widget.position` | `'bottom-right'` | Anchor of the vehicle widget, one of the nine positions of sxHelpMenu |
 | `Config.Widget.offset` | `{ x = 2.5, y = 6.0 }` | Distance of the widget to the edges, in `vw` and `vh` |
-| `Config.Phone.enabled` | `true` | Adds the Waink app to lb-phone when it is started |
+| `Config.Phone.enabled` | `true` | Adds the Waink app to lb-phone and sd-phone when they are started |
 | `Config.Phone` | | Identifier, name, developer, price and default install of the app |
+| `Config.Phone.sdPhone.identifier` | `'waink'` | Identifier of the app in sd-phone |
+| `Config.Phone.sdPhone.closeExport` | `'closePhone'` | sd-phone client export called to close the phone when the app opens, `false` to keep it open |
 | `Config.Animation.enabled` | `true` | Plays the phone animation while the scanner is on |
 | `Config.Animation` | | Phone prop, hand bone, prop offset and rotation, animations on foot and in vehicle |
 | `Config.Light.enabled` | `true` | Lights up the phone during a scan |
@@ -133,7 +136,7 @@ bridge/         ESX / standalone bridge, notifications and owner lookup
 modules/
   scanner/      Scanner state and key, history and vehicle stats
   widget/       Vehicle widget built for sxHelpMenu
-  phone/        Optional lb-phone app that toggles the scanner
+  phone/        Optional lb-phone and sd-phone apps that toggle the scanner
   animation/    Phone animation and prop while the scanner is on
   feedback/     Sounds and vibrations of the scan
   light/        Light of the phone during a scan, synced with a state bag
@@ -154,6 +157,8 @@ During a scan the client sets the `wainkScanning` state bag of its player, repli
 The history is saved in the client KVP under the identifier of the character, and reloaded when an ESX character is loaded.
 
 The lb-phone app has no interface. It is registered with `AddCustomApp` and an `onUse` callback, so opening it closes the phone and toggles the scanner with the same access check as the key. It is registered again when lb-phone restarts and removed when sxWaink stops.
+
+sd-phone apps need a page, so the app is registered with `addCustomApp`, `web/dist/phone.html` as its `ui` and an `onOpen` callback that closes the phone with `Config.Phone.sdPhone.closeExport` and toggles the scanner. The page is only seen if the phone stays open. The app is registered again on every `sd-phone:ready` event, when sd-phone starts or restarts.
 
 The HUD is the `ui_page` of the resource and only shows the crosshair, it never takes the focus. The vehicle widget is a menu of sxHelpMenu with the id `sxwaink_vehicle`: the client builds its three pages with the translated labels, the speed in the selected unit and the Waink logo from `web/dist/logo.svg`, and sends it with `exports.sxHelpMenu:Show`. Its position comes from `Config.Widget` and its page key from sxHelpMenu.
 

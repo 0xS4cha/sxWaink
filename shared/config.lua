@@ -20,6 +20,10 @@ Config.Phone = {
     developer = '0xS4cha',
     defaultApp = true,
     price = 0,
+    sdPhone = {
+        identifier = 'waink',
+        closeExport = 'closePhone',
+    },
 }
 
 Config.Animation = {
